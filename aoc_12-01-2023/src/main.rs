@@ -55,12 +55,41 @@ fn check_for_word(input: &str) -> String {
         ("nine".to_string(), "9"),
     ]);
 
-    let mut replaced = input.to_string();
-    for word in words.keys() {
-        if input.contains(word) {
-            let replacement = format!("{}{}", words.get(word).unwrap(), word);
-            replaced = replaced.replace(word, replacement.as_str());
+    let mut replaced = "".to_string();
+    let mut i = 0;
+    let mut skip = 0;
+    for char in input.chars() {
+        if skip > 0 {
+            skip -= 1;
+            continue;
         }
+
+        if i+5 <= input.len() {
+            let substr = match input.get(i..i+5).ok_or("Out of bounds") {
+                Ok(str)=> str,
+                _ => {continue;}
+            };
+
+            let mut replaced_word = false;
+            for word in words.keys() {
+                if substr.contains(word) {
+                    let replacement = format!("{}{}", words.get(word).unwrap(), word);
+                    let new_substr = substr.replace(word, replacement.as_str());
+                    replaced.push_str(new_substr.as_str());
+                    i += 5;
+                    skip = 4;
+                    replaced_word = true;
+                    continue;
+                }
+            }
+
+            if replaced_word {
+                continue;
+            }
+        }
+
+        replaced.push_str(char.to_string().as_str());
+        i += 1;
     }
 
     replaced
@@ -87,6 +116,7 @@ mod tests {
 
     #[test]
     fn test_check_for_word() {
+        //Five repeated -- no indexing in strings https://stackoverflow.com/questions/24542115/how-to-index-a-string-in-rust
         assert_eq!(check_for_word(&"jjhxddmg5mqxqbgfivextlcpnvtwothreetwonerzk"), "jjhxddmg5mqxqbg5fivextlcpnv2two3three2tw1onerzk");
     }
 }
