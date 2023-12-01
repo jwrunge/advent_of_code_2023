@@ -4,42 +4,32 @@ fn get_calibration(filename: &str) -> i32 {
     let contents = fs::read_to_string(filename).expect("Something went wrong reading the file");
     let lines = contents.split("\n");
     
-    let mut nums: Vec<i32> = Vec::new();
+    let mut sum: i32 = 0;
     for line in lines {
-        nums.push(number_from_line(line));
-    }
-
-    let mut sum = 0;
-    for num in nums {
-        sum += num;
+        sum += number_from_line(line);
     }
 
     sum
 }
 
 fn number_from_line(line: &str) -> i32 {
-    let first_num = first_number(line);
-    let last_num = last_number(line);
+    let replaced: String = check_for_word(line);
+    let first_num = first_or_last_number(&replaced, false);
+    let last_num = first_or_last_number(&replaced, true);
     let combo_str = format!("{}{}", first_num.unwrap(), last_num.unwrap());
     let as_num = combo_str.parse::<i32>().expect("Combo string should parse to i32");
     as_num
 }
 
-fn first_number(input: &str) -> Option<char> {
-    let replaced = check_for_word(input);
-    println!("Replaced: {}", replaced);
-    for c in replaced.chars() {
-        if c.is_digit(10) {
-            return Some(c);
-        }
-    }
+fn first_or_last_number(input: &str, reverse: bool) -> Option<char> {
+    let new_str = match reverse {
+        true => input.chars().rev().collect::<String>(),
+        false => input.to_string()
+    };
 
-    None
-}
+    println!("New string: {}", new_str);
 
-fn last_number(input: &str) -> Option<char> {
-    let replaced = check_for_word(input);
-    for c in replaced.chars().rev() {
+    for c in new_str.chars() {
         if c.is_digit(10) {
             return Some(c);
         }
@@ -93,12 +83,12 @@ mod tests {
 
     #[test]
     fn test_first_num() {
-        assert_eq!(first_number(&"ab12cd34ef").unwrap(), '1');
+        assert_eq!(first_or_last_number(&"ab12cd34ef", false).unwrap(), '1');
     }
 
     #[test]
     fn test_last_num() {
-        assert_eq!(last_number(&"ab12cd34ef").unwrap(), '4');
+        assert_eq!(first_or_last_number(&"ab12cd34ef", true).unwrap(), '4');
     }
 
     #[test]
