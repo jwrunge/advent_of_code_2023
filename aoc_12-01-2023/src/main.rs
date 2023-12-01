@@ -93,7 +93,6 @@ mod tests {
 
     #[test]
     fn test_check_for_word() {
-        //Five repeated -- no indexing in strings https://stackoverflow.com/questions/24542115/how-to-index-a-string-in-rust
         assert_eq!(check_for_word(&"jjhxddmg5mqxqbgfivextlcpnvtwothreetwonerzk"), "jjhxddmg5mqxqbg5fivextlcpnv2two3three2tw1onerzk");
     }
 
