@@ -4,13 +4,11 @@ const lines = fs.readFileSync("./coords.txt", "utf8").split("\r\n");
 let total = 0;
 
 function getFirstOrLastNumber(line, last) {
-    console.log(line, last);
-    if(last) line = line.split().reverse().join();
-    console.log(line);
+    if(last) line = line.split("").reverse().join("");
     for(let char of line) {
         try { 
-            console.log(char, parseInt(char))
-            return parseInt(char); 
+            const parsed = parseInt(char); 
+            if(!isNaN(parsed)) return parsed;
         }
         catch(_) { true }
     }
