@@ -6,10 +6,7 @@ fn get_calibration(filename: &str) -> i32 {
     
     let mut nums: Vec<i32> = Vec::new();
     for line in lines {
-        let first_num = first_number(line);
-        let last_num = last_number(line);
-        let combo_str = format!("{}{}", first_num.unwrap(), last_num.unwrap());
-        nums.push(combo_str.parse::<i32>().expect("Combo string should parse to i32"));
+        nums.push(number_from_line(line));
     }
 
     let mut sum = 0;
@@ -20,8 +17,17 @@ fn get_calibration(filename: &str) -> i32 {
     sum
 }
 
+fn number_from_line(line: &str) -> i32 {
+    let first_num = first_number(line);
+    let last_num = last_number(line);
+    let combo_str = format!("{}{}", first_num.unwrap(), last_num.unwrap());
+    let as_num = combo_str.parse::<i32>().expect("Combo string should parse to i32");
+    as_num
+}
+
 fn first_number(input: &str) -> Option<char> {
     let replaced = check_for_word(input);
+    println!("Replaced: {}", replaced);
     for c in replaced.chars() {
         if c.is_digit(10) {
             return Some(c);
@@ -57,34 +63,15 @@ fn check_for_word(input: &str) -> String {
 
     let mut replaced = "".to_string();
     let mut i = 0;
-    let mut skip = 0;
     for char in input.chars() {
-        if skip > 0 {
-            skip -= 1;
-            continue;
-        }
-
-        if i+5 <= input.len() {
-            let substr = match input.get(i..i+5).ok_or("Out of bounds") {
+        for word in words.keys() {
+            let substr = match input.get(i..i+word.len()).ok_or("Out of bounds") {
                 Ok(str)=> str,
                 _ => {continue;}
             };
 
-            let mut replaced_word = false;
-            for word in words.keys() {
-                if substr.contains(word) {
-                    let replacement = format!("{}{}", words.get(word).unwrap(), word);
-                    let new_substr = substr.replace(word, replacement.as_str());
-                    replaced.push_str(new_substr.as_str());
-                    i += 5;
-                    skip = 4;
-                    replaced_word = true;
-                    continue;
-                }
-            }
-
-            if replaced_word {
-                continue;
+            if substr == word {
+                replaced.push_str(words.get(word).unwrap());
             }
         }
 
@@ -118,5 +105,16 @@ mod tests {
     fn test_check_for_word() {
         //Five repeated -- no indexing in strings https://stackoverflow.com/questions/24542115/how-to-index-a-string-in-rust
         assert_eq!(check_for_word(&"jjhxddmg5mqxqbgfivextlcpnvtwothreetwonerzk"), "jjhxddmg5mqxqbg5fivextlcpnv2two3three2tw1onerzk");
+    }
+
+    #[test]
+    fn test_check_for_word_nums() {
+        assert_eq!(number_from_line("two1nine"), 29);
+        assert_eq!(number_from_line("eightwothree"), 83);
+        assert_eq!(number_from_line("abcone2threexyz"), 13);
+        assert_eq!(number_from_line("xtwone3four"), 24);
+        assert_eq!(number_from_line("4nineeightseven2"), 42);
+        assert_eq!(number_from_line("zoneight234"), 14);
+        assert_eq!(number_from_line("7pqrstsixteen"), 76);
     }
 }
