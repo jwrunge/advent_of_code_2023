@@ -21,7 +21,8 @@ fn get_calibration(filename: &str) -> i32 {
 }
 
 fn first_number(input: &str) -> Option<char> {
-    for c in input.chars() {
+    let replaced = check_for_word(input);
+    for c in replaced.chars() {
         if c.is_digit(10) {
             return Some(c);
         }
@@ -31,7 +32,8 @@ fn first_number(input: &str) -> Option<char> {
 }
 
 fn last_number(input: &str) -> Option<char> {
-    for c in input.chars().rev() {
+    let replaced = check_for_word(input);
+    for c in replaced.chars().rev() {
         if c.is_digit(10) {
             return Some(c);
         }
@@ -56,7 +58,8 @@ fn check_for_word(input: &str) -> String {
     let mut replaced = input.to_string();
     for word in words.keys() {
         if input.contains(word) {
-            replaced = replaced.replace(word, words.get(word).unwrap());
+            let replacement = format!("{}{}", words.get(word).unwrap(), word);
+            replaced = replaced.replace(word, replacement.as_str());
         }
     }
 
@@ -84,6 +87,6 @@ mod tests {
 
     #[test]
     fn test_check_for_word() {
-        assert_eq!(check_for_word(&"one2ctwo34ef"), "12c234ef");
+        assert_eq!(check_for_word(&"jjhxddmg5mqxqbgfivextlcpnvtwothreetwonerzk"), "jjhxddmg5mqxqbg5fivextlcpnv2two3three2tw1onerzk");
     }
 }
