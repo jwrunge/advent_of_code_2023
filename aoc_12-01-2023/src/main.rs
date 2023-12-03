@@ -84,10 +84,10 @@ fn check_for_word(input: &str, i: usize) -> Option<i32> {
 }
 
 fn main() {
-    for _ in 1..1000 {
+    // for _ in 1..1000 {
         let coords = get_calibration("coords.txt");
         println!("Calibration: {}", coords);
-    }
+    // }
 }
 
 #[cfg(test)]
