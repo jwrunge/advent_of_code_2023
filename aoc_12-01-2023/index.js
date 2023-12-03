@@ -1,31 +1,32 @@
 const fs = require("fs");
-const words = { "one": "1", "two": "2", "three": "3", "four": "4", "five": "5", "six": "6", "seven": "7", "eight": "8", "nine": "9" };
+const words = { "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9 };
+
+
 const lines = fs.readFileSync("./coords.txt", "utf8").split("\r\n");
 let total = 0;
 
 function getFirstOrLastNumber(line, last) {
-    if(last) line = line.split("").reverse().join("");
-    for(let char of line) {
-        try { 
-            const parsed = parseInt(char); 
-            if(!isNaN(parsed)) return parsed;
+    const newLine = last ? line.split("").reverse().join("") : structuredClone(line);
+    let i = 0;
+    for(let char of newLine) {
+        const parsed = parseInt(char); 
+        if(isNaN(parsed)) {
+            for(const word in words) {
+                const substr = line.slice(last ? line.length - i - word.length : i, last ? line.length - i : i + word.length);
+                if(substr === word) {
+                    return words[word];
+                }
+            }
+        } else {
+            return parsed;
         }
-        catch(_) { true }
+
+        i++;
     }
 }
 
 for(let line of lines) {
-    let newLine = "";
-    for(let i=0; i < line.length; i++) {
-        for(const word in words) {
-            const substr = line.slice(i, i + word.length);
-            if(substr === word) {
-                newLine += words[word];
-            }
-        }
-        newLine += line[i];
-    }
-    let newNum = `${getFirstOrLastNumber(newLine)}${getFirstOrLastNumber(newLine, true)}`
+    let newNum = `${getFirstOrLastNumber(line)}${getFirstOrLastNumber(line, true)}`
     total += parseInt(newNum) || 0;
 }
 
