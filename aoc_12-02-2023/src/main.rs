@@ -1,46 +1,96 @@
 use std::fs;
 
-fn games_possible(filename: &str) -> i32 {
+fn games_possible(filename: &str) -> (i32, i32) {
     let contents = fs::read_to_string(filename).expect("Something went wrong reading the file");
     let lines = contents.split("\n");
     
-    let mut sum: i32 = 0;
+    let mut sum_ids: i32 = 0;
+    let mut sum_powers: i32 = 0;
     for line in lines {
         let mut line_iter = line.split(":");
         let game_id = line_iter.next().unwrap().replace("Game ", "").parse::<i32>().unwrap();
-        if game_is_possible(line_iter.next().unwrap()) {
-            sum += game_id;
+
+        let (possible, power) = game_is_possible(line_iter.next().unwrap());
+        if possible {
+            sum_ids += game_id;
+
         }
+        sum_powers += power;
     }
 
-    sum
+    (sum_ids, sum_powers)
 }
 
-fn game_is_possible(game: &str) -> bool {
+fn game_is_possible(game: &str) -> (bool, i32) {
+    let mut possible = true;
+
     const MAX_RED: i32 = 12;
     const MAX_GREEN: i32 = 13;
     const MAX_BLUE: i32 = 14;
+    
+    let mut min_red = -1;
+    let mut min_green = -1;
+    let mut min_blue = -1;
 
     let rounds = game.split(";");
     for round in rounds {
-        println!("Round: {}", round);
         let (red, green, blue) = get_round_results(round);
 
-        if red > MAX_RED || green > MAX_GREEN || blue > MAX_BLUE {
-            println!("\nGame is not possible: {}", game);
-            println!("RED: {}, GREEN: {}, BLUE: {}", red, green, blue);
-            return false;
+        match red {
+            Some(x) => {
+                if x > MAX_RED {
+                    possible = false;
+                }
+                if min_red < x || min_red == -1 {
+                    min_red = x
+                }
+            },
+            None => (),
+        }
+        match green {
+            Some(x) => {
+                if x > MAX_GREEN {
+                    possible = false;
+                }
+                if min_green < x || min_green == -1 {
+                    min_green = x
+                }
+            },
+            None => (),
+        }
+        match blue {
+            Some(x) => {
+                if x > MAX_BLUE {
+                    possible = false;
+                }
+                if min_blue < x || min_blue == -1 {
+                    min_blue = x
+                }
+            },
+            None => (),
         }
     }
 
-    true
+    if min_red == -1 {
+        min_red = 0;
+    }
+    if min_green == -1 {
+        min_green = 0;
+    }
+    if min_blue == -1 {
+        min_blue = 0;
+    }
+
+    let total_power = min_red * min_green * min_blue;
+
+    (possible, total_power)
 }
 
-fn get_round_results(round: &str) -> (i32, i32, i32) {
+fn get_round_results(round: &str) -> (Option<i32>, Option<i32>, Option<i32>) {
     let color_strs = round.split(",");
-    let mut red = 0;
-    let mut green = 0;
-    let mut blue = 0;
+    let mut red = None;
+    let mut green = None;
+    let mut blue = None;
 
     for color_str in color_strs {
         for color in ["red", "green", "blue"] {
@@ -56,9 +106,15 @@ fn get_round_results(round: &str) -> (i32, i32, i32) {
                 };
                 
                 match color {
-                    "red" => red = value,
-                    "green" => green = value,
-                    "blue" => blue = value,
+                    "red" => {
+                        red = Some(value);
+                    },
+                    "green" => {
+                        green = Some(value);
+                    },
+                    "blue" => {
+                        blue = Some(value); 
+                    },
                     _ => panic!("Invalid color: {}", color),
                 }
             }
@@ -69,16 +125,6 @@ fn get_round_results(round: &str) -> (i32, i32, i32) {
 }
 
 fn main() {
-    let games = games_possible("games.txt");
-    println!("Games: {}", games);
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    // #[test]
-    // fn test_first_num() {
-    //     assert_eq!(first_or_last_number(&"ab12cd34ef", false), 1);
-    // }
+    let (games_possible_ids, games_possible_powers) = games_possible("games.txt");
+    println!("Games: {}; powers: {}", games_possible_ids, games_possible_powers);
 }
